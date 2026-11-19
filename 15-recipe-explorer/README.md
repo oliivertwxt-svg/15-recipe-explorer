@@ -50,8 +50,8 @@ The category endpoint uses a 24-hour revalidation interval; category meal lists,
 
 The production build marks routes as:
 
-- `○` static prerendered output, including `/` and generated category pages.
-- `◐` Partial Prerendering: a static shell with dynamic content streamed at request time, used for `/search`, `/favourites`, and `/meal/[id]`.
+- `○` static prerendered output, including `/`, `/category/Beef`, and `/category/Chicken`.
+- `◐` Partial Prerendering: a static shell with dynamic content streamed at request time, used for `/search`, `/favourites`, `/meal/[id]`, and most generated category paths.
 - `ƒ` dynamic request-time rendering, used by `/api/search` and `/api/random`.
 
 Favourites are stored as a validated JSON array of up to 50 meal IDs in the `recipe-favourites` cookie. The cookie is `httpOnly`, `SameSite=Lax`, path-wide, and secure in production. It is browser-local and does not require an account.
