@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { Suspense } from "react";
+import FavouriteButton from "@/components/favourite-button";
+import {
+  FAVOURITES_COOKIE,
+  parseFavourites,
+} from "@/lib/favourites";
 import { getMeal, getMealsByCategory } from "@/lib/mealdb";
 import { getYoutubeEmbedUrl } from "@/lib/youtube";
 import IngredientsChecklist from "./ingredients-checklist";
@@ -98,13 +104,16 @@ async function MoreFromCategory({
 }
 
 async function MealContent({ params }: MealPageProps) {
-  const { id } = await params;
+  const [{ id }, cookieStore] = await Promise.all([params, cookies()]);
   const meal = await getMeal(id);
 
   if (!meal) {
     notFound();
   }
 
+  const favourites = parseFavourites(
+    cookieStore.get(FAVOURITES_COOKIE)?.value,
+  );
   const tags = meal.strTags
     ?.split(",")
     .map((tag) => tag.trim())
@@ -128,7 +137,16 @@ async function MealContent({ params }: MealPageProps) {
 
       <article className="mt-4">
         <header>
-          <h1 className="text-4xl font-bold text-zinc-950">{meal.strMeal}</h1>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <h1 className="text-4xl font-bold text-zinc-950">
+              {meal.strMeal}
+            </h1>
+            <FavouriteButton
+              mealId={meal.idMeal}
+              initialFavourite={favourites.ids.includes(meal.idMeal)}
+              initialMessage={favourites.issue}
+            />
+          </div>
           <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-sm text-zinc-600">
             <span>{meal.strArea}</span>
             <span aria-hidden="true">&middot;</span>

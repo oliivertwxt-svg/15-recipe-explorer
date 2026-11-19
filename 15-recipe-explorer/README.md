@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Recipe Explorer
 
-## Getting Started
+A Next.js App Router recipe browser powered by [TheMealDB](https://www.themealdb.com/api/json/v1/1/). Browse categories, search and share recipe results, view recipe details, save favourites, and discover a random meal.
 
-First, run the development server:
+## Requirements
+
+- Node.js 20 or newer
+- npm
+
+## Run locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+npm start
+```
 
-## Learn More
+## Features and routes
 
-To learn more about Next.js, take a look at the following resources:
+- `/` — browse recipe categories.
+- `/category/[name]` — browse recipes by category.
+- `/meal/[id]` — recipe details, ingredient checklist, instructions, video, and favourite toggle.
+- `/search?q=chicken` — shareable recipe search results.
+- `/favourites` — recipes saved in the current browser.
+- `GET /api/search?q=chicken` — autocomplete/search JSON; requires at least two characters.
+- `GET /api/random` — uncached random-recipe lookup used by the “Surprise me” button.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+TheMealDB fetch helpers live in `src/lib/mealdb.ts`. Category data is cached for 24 hours; recipe and search data for one hour. Random recipe lookups use `revalidate: 0`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Cache behavior
 
-## Deploy on Vercel
+Next.js 14 cached `fetch` requests by default. Next.js 15 changed the default to uncached, so this app sets its cache policy explicitly:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `cache: "force-cache"` stores a response in the persistent Data Cache until it is invalidated or evicted.
+- `next: { revalidate: seconds }` caches a response and revalidates it after the specified interval.
+- `cache: "no-store"` skips the persistent Data Cache. `next: { revalidate: 0 }` has the same uncached intent and is used for random recipes.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The category endpoint uses a 24-hour revalidation interval; category meal lists, recipe details, and search results use one hour. This project currently runs Next.js 16, but these explicit fetch settings avoid relying on the changed Next.js 14-to-15 default.
+
+### Rendering
+
+The production build marks routes as:
+
+- `○` static prerendered output, including `/` and generated category pages.
+- `◐` Partial Prerendering: a static shell with dynamic content streamed at request time, used for `/search`, `/favourites`, and `/meal/[id]`.
+- `ƒ` dynamic request-time rendering, used by `/api/search` and `/api/random`.
+
+Favourites are stored as a validated JSON array of up to 50 meal IDs in the `recipe-favourites` cookie. The cookie is `httpOnly`, `SameSite=Lax`, path-wide, and secure in production. It is browser-local and does not require an account.
+
+## Deploy to Vercel
+
+Import the GitHub repository into [Vercel](https://vercel.com/new), select the Next.js framework preset, and deploy. The project uses the default Next.js build and output settings, so no additional environment variables are required.
+
+Alternatively, after installing and authenticating the Vercel CLI:
+
+```bash
+vercel
+vercel --prod
+```

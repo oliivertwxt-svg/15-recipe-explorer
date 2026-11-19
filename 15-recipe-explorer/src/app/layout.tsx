@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import HeaderSearch from "@/components/header-search";
+import RandomRecipeButton from "@/components/random-recipe-button";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,7 +35,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             >
               Recipe Explorer
             </Link>
-            <HeaderSearch />
+            <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
+              <HeaderSearch />
+              <Link
+                href="/favourites"
+                className="whitespace-nowrap rounded-xl px-2 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-rose-50 hover:text-rose-700"
+              >
+                Favourites
+              </Link>
+              <RandomRecipeButton />
+            </div>
           </div>
         </header>
         {children}
