@@ -66,8 +66,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
         >
           {meals.map((meal) => (
-            <article
+            <Link
               key={meal.idMeal}
+              href={`/meal/${meal.idMeal}`}
               className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100">
@@ -82,7 +83,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <h2 className="p-5 text-lg font-semibold text-zinc-950">
                 {meal.strMeal}
               </h2>
-            </article>
+            </Link>
           ))}
         </section>
       )}
